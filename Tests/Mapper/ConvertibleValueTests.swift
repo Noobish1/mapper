@@ -209,4 +209,64 @@ final class ConvertibleValueTests: XCTestCase {
         let test = Test.from(["foo": "not a dictionary"])
         XCTAssertNil(test)
     }
+    
+    func testDictionaryOfConvertibleKeysToArrayOfConvertibleValues() {
+        struct Test: Mappable {
+            let dictionary: [String: [String]]
+            
+            init(map: Mapper) throws {
+                try self.dictionary = map.from("foo")
+            }
+        }
+        
+        let test = Test.from(["foo": ["bar" : ["baz"]]])
+        XCTAssertTrue(test?.dictionary.count > 0)
+    }
+    
+    func testDictionaryOfConvertibleKeysToArrayOfConvertibleValuesKeyInvalid() {
+        struct Test: Mappable {
+            let dictionary: [String: [String]]?
+            
+            init(map: Mapper) throws {
+                self.dictionary = map.optionalFrom("foo")
+            }
+        }
+        
+        do {
+            let test = try Test(map: Mapper(JSON: ["foo": ["not a dictionary"]]))
+            XCTAssertNil(test.dictionary)
+        } catch {
+            XCTFail("Couldn't create Test")
+        }
+    }
+    
+    func testOptionalDictionaryOfConvertibleKeysToArrayOfConvertibleValuesValueInvalid() {
+        struct Test: Mappable {
+            let dictionary: [String: [String]]?
+            
+            init(map: Mapper) throws {
+                self.dictionary = map.optionalFrom("foo")
+            }
+        }
+        
+        do {
+            let test = try Test(map: Mapper(JSON: ["foo": ["key": "not an array of strings"]]))
+            XCTAssertNil(test.dictionary)
+        } catch {
+            XCTFail("Couldn't create Test")
+        }
+    }
+    
+    func testDictionaryOfConvertibleKeysToArrayOfConvertibleValuesButNotAnArray() {
+        struct Test: Mappable {
+            let dictionary: [String: [String]]
+            
+            init(map: Mapper) throws {
+                try self.dictionary = map.from("foo")
+            }
+        }
+        
+        let test = Test.from(["foo": ["bar" : "baz"]])
+        XCTAssertNil(test)
+    }
 }

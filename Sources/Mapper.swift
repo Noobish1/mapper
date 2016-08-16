@@ -335,21 +335,73 @@ public struct Mapper {
 
         return result
     }
-
+    
     /**
      Get an optional dictionary of Convertible values from a field in the source data
-
+     
      This transparently converts a source dictionary to a dictionary of 2 Convertible types
-
+     
      - parameter field: The field to retrieve from the source data, can be an empty string to return the
-                        entire data set
-
+     entire data set
+     
      - returns: A dictionary where the keys and values are created using their convertible implementations or
-                nil if anything throws
+     nil if anything throws
      */
     @warn_unused_result
     public func optionalFrom<U: Convertible, T: Convertible
         where U == U.ConvertedType, T == T.ConvertedType>(field: String) -> [U: T]?
+    {
+        return try? self.from(field)
+    }
+    
+    /**
+     Get a dictionary with Convertible keys mapped to arrays of convertible values from a field in the source data
+     
+     This transparently converts a source dictionary to a dictionary of 2 Convertible types
+     
+     - parameter field: The field to retrieve from the source data, can be an empty string to return the
+     entire data set
+     
+     - throws: MapperError.TypeMismatchError if the value for the given field isn't a NSDictionary or one of the values is not an NSArray
+     - throws: Any error produced by the Convertible implementation of either expected type
+     
+     - returns: A dictionary where the keys and values are created using their convertible implementations
+     */
+    @warn_unused_result
+    public func from<U: Convertible, T: Convertible
+        where U == U.ConvertedType, T == T.ConvertedType>(field: String) throws -> [U: [T]]
+    {
+        let object = try self.JSONFromField(field)
+        guard let data = object as? NSDictionary else {
+            throw MapperError.TypeMismatchError(field: field, value: object, type: NSDictionary.self)
+        }
+        
+        var result = [U: [T]]()
+        for (key, value) in data {
+            guard let array = value as? NSArray else {
+                throw MapperError.TypeMismatchError(field: field, value: object, type: NSArray.self)
+            }
+            
+            result[try U.fromMap(key)] = try array.map { try T.fromMap($0) }
+        }
+        
+        return result
+    }
+    
+    /**
+     Get an optional dictionary with Convertible keys mapped to arrays of convertible values from a field in the source data
+     
+     This transparently converts a source dictionary to a dictionary of 2 Convertible types
+     
+     - parameter field: The field to retrieve from the source data, can be an empty string to return the
+     entire data set
+     
+     - returns: A dictionary where the keys and values are created using their convertible implementations or
+     nil if anything throws
+     */
+    @warn_unused_result
+    public func optionalFrom<U: Convertible, T: Convertible
+        where U == U.ConvertedType, T == T.ConvertedType>(field: String) -> [U: [T]]?
     {
         return try? self.from(field)
     }
