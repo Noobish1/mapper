@@ -350,19 +350,18 @@ public struct Mapper {
      
      - returns: A dictionary where the keys and values are created using their convertible implementations
      */
-    @warn_unused_result
-    public func from<U: Convertible, T: Convertible
-        where U == U.ConvertedType, T == T.ConvertedType>(field: String) throws -> [U: [T]]
+    public func from<U: Convertible, T: Convertible>(_ field: String) throws -> [U: [T]]
+        where U == U.ConvertedType, T == T.ConvertedType
     {
         let object = try self.JSONFromField(field)
         guard let data = object as? NSDictionary else {
-            throw MapperError.TypeMismatchError(field: field, value: object, type: NSDictionary.self)
+            throw MapperError.typeMismatchError(field: field, value: object, type: NSDictionary.self)
         }
         
         var result = [U: [T]]()
         for (key, value) in data {
             guard let array = value as? NSArray else {
-                throw MapperError.TypeMismatchError(field: field, value: object, type: NSArray.self)
+                throw MapperError.typeMismatchError(field: field, value: object, type: NSArray.self)
             }
             
             result[try U.fromMap(key)] = try array.map { try T.fromMap($0) }
@@ -382,9 +381,8 @@ public struct Mapper {
      - returns: A dictionary where the keys and values are created using their convertible implementations or
      nil if anything throws
      */
-    @warn_unused_result
-    public func optionalFrom<U: Convertible, T: Convertible
-        where U == U.ConvertedType, T == T.ConvertedType>(field: String) -> [U: [T]]?
+    public func optionalFrom<U: Convertible, T: Convertible>(_ field: String) -> [U: [T]]?
+        where U == U.ConvertedType, T == T.ConvertedType
     {
         return try? self.from(field)
     }
@@ -421,8 +419,7 @@ public struct Mapper {
      
      - returns: The value for the given field, if it can be converted to the expected type T
      */
-    @warn_unused_result
-    public func from<T: NilConvertible where T == T.ConvertedType>(field: String) throws -> T {
+    public func from<T: NilConvertible>(field: String) throws -> T where T == T.ConvertedType {
         return try T.fromMap(try? self.JSONFromField(field))
     }
     
