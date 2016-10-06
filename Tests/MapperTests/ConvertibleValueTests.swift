@@ -224,7 +224,7 @@ final class ConvertibleValueTests: XCTestCase {
         }
         
         let test = Test.from(["foo": ["bar" : ["baz"]]])
-        XCTAssertTrue(test?.dictionary.count > 0)
+        XCTAssertTrue((test?.dictionary.count ?? 0) > 0)
     }
     
     func testDictionaryOfConvertibleKeysToArrayOfConvertibleValuesKeyInvalid() {

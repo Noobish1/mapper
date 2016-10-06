@@ -419,7 +419,7 @@ public struct Mapper {
      
      - returns: The value for the given field, if it can be converted to the expected type T
      */
-    public func from<T: NilConvertible>(field: String) throws -> T where T == T.ConvertedType {
+    public func from<T: NilConvertible>(_ field: String) throws -> T where T == T.ConvertedType {
         return try T.fromMap(try? self.JSONFromField(field))
     }
     
